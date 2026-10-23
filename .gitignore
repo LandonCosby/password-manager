@@ -1,0 +1,16 @@
+# Build output
+build/
+
+# Vault files. Never commit a real vault, even an encrypted one.
+*.pmv
+*.pmv.bak
+
+# Exports are plaintext.
+*.csv
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
