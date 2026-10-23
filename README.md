@@ -4,8 +4,10 @@ A command-line password manager written in C++20. Vaults are encrypted with
 libsodium: Argon2id derives a key from the master password, and
 XChaCha20-Poly1305 encrypts the vault.
 
-Status: in-memory vault and JSON format done; encryption is next. See
-[PLAN.md](PLAN.md) for the roadmap.
+Status: vault encryption done. The program creates or opens `vault.pmv` in
+the current folder. **For development the master password is hard-coded as
+`Password1234`** (see `src/main.cpp`); a password prompt comes in Phase 4.
+See [PLAN.md](PLAN.md) for the roadmap.
 
 ## Requirements
 
@@ -43,7 +45,8 @@ src/
   entry.h         Entry: one saved login
   vault.h/.cpp    Vault: in-memory add, find, update, remove, search
   vault_json.*    to_json / from_json (plaintext; encrypted before saving)
-  crypto.*        libsodium setup
+  vault_file.*    encrypted file format, save_vault / load_vault
+  crypto.*        libsodium setup, Argon2id key derivation, SecureBuffer
   main.cpp        program entry point
 tests/            GoogleTest unit tests
 ```

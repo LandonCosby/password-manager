@@ -16,6 +16,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(sodium)
 
+# Unoptimized Argon2id is many times slower, which makes opening a vault
+# take seconds in Debug builds. Always optimize libsodium itself.
+if(NOT MSVC)
+  target_compile_options(sodium PRIVATE -O2)
+endif()
+
 FetchContent_Declare(
   json
   GIT_REPOSITORY https://github.com/nlohmann/json.git
@@ -43,6 +49,7 @@ add_library(pm_core
   src/crypto.cpp
   src/vault.cpp
   src/vault_json.cpp
+  src/vault_file.cpp
 )
 target_include_directories(pm_core PUBLIC src)
 target_link_libraries(pm_core PUBLIC sodium PRIVATE nlohmann_json::nlohmann_json)
@@ -57,6 +64,7 @@ add_executable(pm_tests
   tests/test_crypto.cpp
   tests/test_vault.cpp
   tests/test_vault_json.cpp
+  tests/test_vault_file.cpp
 )
 target_link_libraries(pm_tests PRIVATE pm_core GTest::gtest_main)
 target_compile_options(pm_tests PRIVATE ${PM_WARNINGS})

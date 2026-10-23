@@ -15,11 +15,16 @@ Each phase should leave the project building, with passing tests.
 - [x] Save to and load from JSON (nlohmann/json); round-trip tests
 
 ## Phase 2: Cryptography
-- [ ] Derive a key from the master password with Argon2id (`crypto_pwhash`) and a random salt
-- [ ] Encrypt with XChaCha20-Poly1305 (`crypto_aead_xchacha20poly1305_ietf`), new nonce on every save
-- [ ] File layout: `[magic][version][KDF params][salt][nonce][ciphertext+tag]`
-- [ ] Wrong password or tampered file: one clear error, no further detail
-- [ ] Wipe secrets from memory (`sodium_memzero`, `sodium_mlock`, a `SecureString` wrapper)
+- [x] Derive a key from the master password with Argon2id (`crypto_pwhash`) and a random salt
+- [x] Encrypt with XChaCha20-Poly1305 (`crypto_aead_xchacha20poly1305_ietf`), new nonce on every save
+- [x] File layout: `[magic][version][KDF params][salt][nonce][ciphertext+tag]`
+- [x] Wrong password or tampered file: one clear error, no further detail
+- [x] Wipe secrets from memory: the key and decrypted JSON live in `SecureBuffer`
+      (`sodium_malloc`), the JSON written for encryption is zeroed
+- [ ] Still plain `std::string`: entry fields inside `Vault`, and nlohmann/json's
+      temporary copies while parsing. Revisit in Phase 6.
+- [ ] Temporary: master password is hard-coded as `Password1234` in `main.cpp`
+      until the Phase 4 prompt replaces it
 
 ## Phase 3: File handling
 - [ ] Atomic save: write a temp file, flush, rename over the vault
