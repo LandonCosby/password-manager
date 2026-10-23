@@ -10,9 +10,9 @@ Each phase should leave the project building, with passing tests.
 - [x] GoogleTest with a first passing test
 
 ## Phase 1: Core data model
-- [ ] `Entry` struct: id, title, username, password, URL, notes, created/modified timestamps
-- [ ] `Vault` class: add, get, update, delete, list, search (in memory)
-- [ ] Save to and load from JSON (nlohmann/json); round-trip tests
+- [x] `Entry` struct: id, title, username, password, URL, notes, created/modified timestamps
+- [x] `Vault` class: add, get, update, delete, list, search (in memory)
+- [x] Save to and load from JSON (nlohmann/json); round-trip tests
 
 ## Phase 2: Cryptography
 - [ ] Derive a key from the master password with Argon2id (`crypto_pwhash`) and a random salt

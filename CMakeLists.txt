@@ -17,6 +17,14 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sodium)
 
 FetchContent_Declare(
+  json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  GIT_TAG v3.11.3
+  GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(json)
+
+FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
   GIT_TAG v1.15.2
@@ -31,9 +39,13 @@ else()
 endif()
 
 # Core code lives in a library so the tests can link against it.
-add_library(pm_core src/crypto.cpp)
+add_library(pm_core
+  src/crypto.cpp
+  src/vault.cpp
+  src/vault_json.cpp
+)
 target_include_directories(pm_core PUBLIC src)
-target_link_libraries(pm_core PUBLIC sodium)
+target_link_libraries(pm_core PUBLIC sodium PRIVATE nlohmann_json::nlohmann_json)
 target_compile_options(pm_core PRIVATE ${PM_WARNINGS})
 
 add_executable(password_manager src/main.cpp)
@@ -41,8 +53,13 @@ target_link_libraries(password_manager PRIVATE pm_core)
 target_compile_options(password_manager PRIVATE ${PM_WARNINGS})
 
 enable_testing()
-add_executable(pm_tests tests/test_crypto.cpp)
+add_executable(pm_tests
+  tests/test_crypto.cpp
+  tests/test_vault.cpp
+  tests/test_vault_json.cpp
+)
 target_link_libraries(pm_tests PRIVATE pm_core GTest::gtest_main)
+target_compile_options(pm_tests PRIVATE ${PM_WARNINGS})
 
 include(GoogleTest)
 gtest_discover_tests(pm_tests)
