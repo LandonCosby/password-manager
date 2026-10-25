@@ -50,6 +50,7 @@ add_library(pm_core
   src/vault.cpp
   src/vault_json.cpp
   src/vault_file.cpp
+  src/file_io.cpp
 )
 target_include_directories(pm_core PUBLIC src)
 target_link_libraries(pm_core PUBLIC sodium PRIVATE nlohmann_json::nlohmann_json)
@@ -65,6 +66,7 @@ add_executable(pm_tests
   tests/test_vault.cpp
   tests/test_vault_json.cpp
   tests/test_vault_file.cpp
+  tests/test_file_io.cpp
 )
 target_link_libraries(pm_tests PRIVATE pm_core GTest::gtest_main)
 target_compile_options(pm_tests PRIVATE ${PM_WARNINGS})

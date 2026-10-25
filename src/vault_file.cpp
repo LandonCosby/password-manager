@@ -4,10 +4,11 @@
 
 #include <cstdint>
 #include <cstring>
-#include <fstream>
 #include <iterator>
 #include <string>
 #include <utility>
+
+#include "file_io.h"
 
 namespace pm {
 
@@ -116,29 +117,25 @@ Vault decrypt_vault(std::span<const unsigned char> data, std::string_view passwo
     return from_json(json, std::move(clock));
 }
 
+std::filesystem::path backup_path(const std::filesystem::path& path) {
+    std::filesystem::path bak = path;
+    bak += ".bak";
+    return bak;
+}
+
 void save_vault(const std::filesystem::path& path, const Vault& vault,
                 std::string_view password, const KdfParams& params) {
+    // Encrypt first: it is the slow step and the one most likely to fail,
+    // and nothing on disk has been touched yet if it does.
     std::vector<unsigned char> bytes = encrypt_vault(vault, password, params);
-    std::ofstream file(path, std::ios::binary | std::ios::trunc);
-    file.write(reinterpret_cast<const char*>(bytes.data()),
-               static_cast<std::streamsize>(bytes.size()));
-    file.close();
-    if (!file) {
-        throw std::runtime_error("cannot write vault file " + path.string());
+    if (std::filesystem::exists(path)) {
+        write_file_atomic(backup_path(path), read_file(path));
     }
+    write_file_atomic(path, bytes);
 }
 
 Vault load_vault(const std::filesystem::path& path, std::string_view password, Clock clock) {
-    std::ifstream file(path, std::ios::binary);
-    if (!file) {
-        throw std::runtime_error("cannot open vault file " + path.string());
-    }
-    std::vector<unsigned char> bytes((std::istreambuf_iterator<char>(file)),
-                                     std::istreambuf_iterator<char>());
-    if (file.bad()) {
-        throw std::runtime_error("cannot read vault file " + path.string());
-    }
-    return decrypt_vault(bytes, password, std::move(clock));
+    return decrypt_vault(read_file(path), password, std::move(clock));
 }
 
 }  // namespace pm

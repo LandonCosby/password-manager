@@ -42,8 +42,15 @@ std::vector<unsigned char> encrypt_vault(const Vault& vault, std::string_view pa
 Vault decrypt_vault(std::span<const unsigned char> data, std::string_view password,
                     Clock clock = system_now);
 
+// Where save_vault keeps the previous version: path + ".bak".
+std::filesystem::path backup_path(const std::filesystem::path& path);
+
 // encrypt_vault/decrypt_vault plus file I/O. I/O failures throw
 // std::runtime_error.
+//
+// save_vault first copies the existing file (if any) to backup_path, then
+// replaces it. Both steps use write_file_atomic, so after a crash at any
+// point the vault and the backup are each a complete file.
 void save_vault(const std::filesystem::path& path, const Vault& vault,
                 std::string_view password, const KdfParams& params = KdfParams::defaults());
 Vault load_vault(const std::filesystem::path& path, std::string_view password,

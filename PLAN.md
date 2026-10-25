@@ -27,9 +27,12 @@ Each phase should leave the project building, with passing tests.
       until the Phase 4 prompt replaces it
 
 ## Phase 3: File handling
-- [ ] Atomic save: write a temp file, flush, rename over the vault
-- [ ] Keep the previous version as `vault.pmv.bak`
-- [ ] Default location `%APPDATA%\passwordManager\vault.pmv`
+- [x] Atomic save: write a temp file, flush, rename over the vault
+- [x] Keep the previous version as `vault.pmv.bak`
+- [x] Default location `%APPDATA%\passwordManager\vault.pmv`
+      (override with `PASSWORDMANAGER_VAULT`)
+- [ ] The non-Windows code path (POSIX `fsync`/`rename`, `0600` file mode,
+      XDG location) compiles only on Linux/macOS and has not been tested yet
 
 ## Phase 4: Command-line interface
 - [ ] Commands: `init`, `add`, `get`, `list`, `edit`, `delete`, `search`, `change-master`

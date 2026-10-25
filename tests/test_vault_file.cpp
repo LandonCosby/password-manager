@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "crypto.h"
+#include "file_io.h"
+#include "temp_dir.h"
 #include "vault_file.h"
 
 namespace {
@@ -128,17 +130,57 @@ TEST_F(VaultFileTest, EncryptRejectsOutOfRangeParams) {
 }
 
 TEST_F(VaultFileTest, SaveAndLoadFile) {
-    auto path = std::filesystem::temp_directory_path() / "pm_test_vault.pmv";
-    pm::save_vault(path, vault, kPassword, pm::KdfParams::fastest());
-    pm::Vault loaded = pm::load_vault(path, kPassword);
-    std::filesystem::remove(path);
-    EXPECT_EQ(loaded.entries(), vault.entries());
+    TempDir dir;
+    pm::save_vault(dir / "v.pmv", vault, kPassword, pm::KdfParams::fastest());
+    EXPECT_EQ(pm::load_vault(dir / "v.pmv", kPassword).entries(), vault.entries());
 }
 
 TEST_F(VaultFileTest, LoadMissingFileThrows) {
-    auto path = std::filesystem::temp_directory_path() / "pm_test_does_not_exist.pmv";
-    std::filesystem::remove(path);
-    EXPECT_THROW(pm::load_vault(path, kPassword), std::runtime_error);
+    TempDir dir;
+    EXPECT_THROW(pm::load_vault(dir / "missing.pmv", kPassword), std::runtime_error);
+}
+
+TEST_F(VaultFileTest, BackupPathAddsBakSuffix) {
+    EXPECT_EQ(pm::backup_path("dir/vault.pmv"), std::filesystem::path("dir/vault.pmv.bak"));
+}
+
+TEST_F(VaultFileTest, FirstSaveMakesNoBackup) {
+    TempDir dir;
+    pm::save_vault(dir / "v.pmv", vault, kPassword, pm::KdfParams::fastest());
+    EXPECT_FALSE(std::filesystem::exists(dir / "v.pmv.bak"));
+}
+
+TEST_F(VaultFileTest, EachSaveBacksUpThePreviousVersion) {
+    TempDir dir;
+    auto path = dir / "v.pmv";
+    auto fast = pm::KdfParams::fastest();
+
+    pm::save_vault(path, vault, kPassword, fast);
+    auto first = pm::read_file(path);
+
+    pm::Entry e;
+    e.title = "Second";
+    vault.add(e);
+    pm::save_vault(path, vault, kPassword, fast);
+    EXPECT_EQ(pm::read_file(dir / "v.pmv.bak"), first);
+    EXPECT_EQ(pm::load_vault(dir / "v.pmv.bak", kPassword).size(), 1u);
+    EXPECT_EQ(pm::load_vault(path, kPassword).size(), 2u);
+
+    auto second = pm::read_file(path);
+    pm::save_vault(path, vault, kPassword, fast);
+    EXPECT_EQ(pm::read_file(dir / "v.pmv.bak"), second);
+}
+
+TEST_F(VaultFileTest, FailedEncryptLeavesFilesUntouched) {
+    TempDir dir;
+    auto path = dir / "v.pmv";
+    pm::save_vault(path, vault, kPassword, pm::KdfParams::fastest());
+    auto before = pm::read_file(path);
+
+    EXPECT_THROW(pm::save_vault(path, vault, kPassword, pm::KdfParams{0, 0}),
+                 std::invalid_argument);
+    EXPECT_EQ(pm::read_file(path), before);
+    EXPECT_FALSE(std::filesystem::exists(dir / "v.pmv.bak"));
 }
 
 TEST_F(VaultFileTest, DefaultParamsRoundTrip) {
