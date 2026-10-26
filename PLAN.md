@@ -23,8 +23,7 @@ Each phase should leave the project building, with passing tests.
       (`sodium_malloc`), the JSON written for encryption is zeroed
 - [ ] Still plain `std::string`: entry fields inside `Vault`, and nlohmann/json's
       temporary copies while parsing. Revisit in Phase 6.
-- [ ] Temporary: master password is hard-coded as `Password1234` in `main.cpp`
-      until the Phase 4 prompt replaces it
+- [x] Temporary hard-coded master password removed in Phase 4
 
 ## Phase 3: File handling
 - [x] Atomic save: write a temp file, flush, rename over the vault
@@ -35,10 +34,14 @@ Each phase should leave the project building, with passing tests.
       XDG location) compiles only on Linux/macOS and has not been tested yet
 
 ## Phase 4: Command-line interface
-- [ ] Commands: `init`, `add`, `get`, `list`, `edit`, `delete`, `search`, `change-master`
-- [ ] Hide typing at password prompts (`SetConsoleMode`)
-- [ ] Copy to clipboard, clear it after about 30 seconds
-- [ ] Argument parsing (CLI11 or a simple hand-written parser)
+- [x] Commands: `init`, `add`, `get`, `list`, `edit`, `delete`, `search`, `change-master`
+- [x] Hide typing at password prompts (`SetConsoleMode`)
+- [x] Copy to clipboard, clear it after about 30 seconds
+- [x] Argument parsing (CLI11 2.4.2)
+- [ ] Not testable here: the hidden prompt in a real console window. Try it by
+      hand; automated runs only cover piped input
+- [ ] Non-Windows: no clipboard support yet (`get` says to use `--show`), and
+      hidden input via termios is untested
 
 ## Phase 5: Password generator
 - [ ] `generate` with length and character-set options, using `randombytes_uniform`

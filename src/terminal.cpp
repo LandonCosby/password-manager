@@ -188,6 +188,13 @@ std::string read_input(std::string_view prompt, bool echo) {
     if (!line.empty() && line.back() == '\r') {
         line.pop_back();
     }
+    // PowerShell starts piped text with a UTF-8 byte order mark, which would
+    // otherwise become part of the first line (often the master password).
+    static bool first_line = true;
+    if (first_line && line.starts_with("\xEF\xBB\xBF")) {
+        line.erase(0, 3);
+    }
+    first_line = false;
     return line;
 }
 

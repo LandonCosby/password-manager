@@ -84,6 +84,7 @@ add_executable(pm_tests
   tests/test_vault_json.cpp
   tests/test_vault_file.cpp
   tests/test_file_io.cpp
+  tests/test_cli.cpp
 )
 target_link_libraries(pm_tests PRIVATE pm_core GTest::gtest_main)
 target_compile_options(pm_tests PRIVATE ${PM_WARNINGS})
