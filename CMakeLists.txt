@@ -31,6 +31,14 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(json)
 
 FetchContent_Declare(
+  cli11
+  GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+  GIT_TAG v2.4.2
+  GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(cli11)
+
+FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
   GIT_TAG v1.15.2
@@ -51,9 +59,18 @@ add_library(pm_core
   src/vault_json.cpp
   src/vault_file.cpp
   src/file_io.cpp
+  src/terminal.cpp
+  src/cli.cpp
 )
 target_include_directories(pm_core PUBLIC src)
-target_link_libraries(pm_core PUBLIC sodium PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(pm_core
+  PUBLIC sodium
+  PRIVATE nlohmann_json::nlohmann_json CLI11::CLI11
+)
+if(WIN32)
+  # Clipboard and window functions, and CommandLineToArgvW.
+  target_link_libraries(pm_core PRIVATE user32 shell32)
+endif()
 target_compile_options(pm_core PRIVATE ${PM_WARNINGS})
 
 add_executable(password_manager src/main.cpp)

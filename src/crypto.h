@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace pm {
 
@@ -34,6 +35,40 @@ private:
 
 // Overwrites a string's characters with zeros.
 void wipe(std::string& s);
+
+// A string that is wiped when destroyed. Moving copies the characters and
+// wipes the source, so no stale copy is left in the moved-from object.
+class SecretString {
+public:
+    SecretString() = default;
+    explicit SecretString(std::string value) : value_(std::move(value)) {}
+    ~SecretString() { wipe(value_); }
+
+    SecretString(SecretString&& other) noexcept : value_(other.value_) { other.clear(); }
+    SecretString& operator=(SecretString&& other) noexcept {
+        if (this != &other) {
+            wipe(value_);
+            value_ = other.value_;
+            other.clear();
+        }
+        return *this;
+    }
+    SecretString(const SecretString&) = delete;
+    SecretString& operator=(const SecretString&) = delete;
+
+    const std::string& str() const { return value_; }
+    std::string_view view() const { return value_; }
+    std::size_t size() const { return value_.size(); }
+    bool empty() const { return value_.empty(); }
+
+private:
+    void clear() {
+        wipe(value_);
+        value_.clear();
+    }
+
+    std::string value_;
+};
 
 // Argon2id cost settings, stored in the vault file so they can be raised
 // later without breaking old vaults.
