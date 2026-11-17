@@ -1,4 +1,6 @@
-# passwordManager
+# password-manager
+
+> **Work in progress.** The encrypted vault works, but the app is not ready for real passwords yet. See [PLAN.md](PLAN.md) for what is left.
 
 A command-line password manager written in C++20. Vaults are encrypted with
 libsodium: Argon2id derives a key from the master password, and
